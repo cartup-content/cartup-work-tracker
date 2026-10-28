@@ -112,3 +112,19 @@ export function lockDashboard() {
 /** Apps Script access code for the unlocked dashboard (null when not locked / not unlocked). */
 export const dashToken = () => token;
 export const isUnlocked = () => !!current;
+
+/**
+ * The access code from the key remembered on this device. The Job desk and Task board never decrypt
+ * the data, so a dashboard user who chose "Remember on this device" doesn't need the team code there.
+ */
+export async function savedDashToken(): Promise<string | null> {
+  if (token) return token;
+  const s = stored();
+  if (!s) return null;
+  try {
+    await useRaw(unb64(s));
+  } catch {
+    return null;
+  }
+  return token;
+}

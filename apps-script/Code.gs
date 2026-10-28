@@ -26,9 +26,13 @@
  *   Workflows → "Post to a channel when a webhook request is received" → copy the URL, then add the
  *   Script Property TEAMS_WEBHOOK = that URL. The link stays here; the website never sees it.
  *   For real @mentions add TEAMS_PEOPLE = {"Name":"teams-sign-in@email", …}; without it the name is plain "@Name".
+ *
+ * Optional — team access code for the Job desk and Task board: Script Property TEAM_CODE = a code you
+ *   give the team. Then the Work Sheet, Form Log and QC sheets only answer requests carrying that code
+ *   (or the dashboard access code), so the public Web app URL alone can no longer read or change them.
  */
 
-var SCRIPT_VERSION = '2.2.0';
+var SCRIPT_VERSION = '2.3.0';
 
 var WORK_ID = '1H35eZz06Wx4uGcFXxZjwQQ1F1M5T8qU3gi8fY2gvaXc';
 var GOVERNANCE_ID = '1Bw1lfwvEJfFOx_1HFifPqdr6KoG9XQ8rAJiNAboN5T4';
@@ -225,6 +229,7 @@ function read_(p) {
   var cfg = SHEETS[name];
   if (!cfg) throw new Error('Unknown sheet "' + name + '"');
   if (LOCKED_SHEETS[name]) needToken_(p.token);
+  if (TEAM_SHEETS[name]) needTeamCode_(p);
   var sh = tab_(cfg, !!cfg.managed);
   var L = layout_(sh, cfg);
   var tz = L.tz;
@@ -370,6 +375,8 @@ function write_(body, nowDate) {
   if (!by) throw new Error('Your name is required.');
   var ops = [].concat(body.ops || []);
   if (!ops.length || ops.length > 200) throw new Error('Send 1–200 changes at a time.');
+  // Checked for the whole request, so a missing code is one clear error instead of one per row
+  if (ops.some(function (o) { return o && TEAM_SHEETS[String(o.sheet || '')]; })) needTeamCode_(body);
   var layouts = {};
   var mirrorCache = {};
   var logRows = [];
@@ -481,6 +488,22 @@ function needToken_(given) {
   if (want && String(given || '').trim() !== want) throw new Error('The dashboard is password-locked: unlock it with the dashboard password (or, after a password change, update DASHBOARD_TOKEN in the Apps Script properties).');
 }
 
+/**
+ * Optional Script Property TEAM_CODE (see the top of this file). When set, the sheets the Job desk and
+ * Task board use answer only requests with `code` = TEAM_CODE, or `token` = DASHBOARD_TOKEN (the unlocked
+ * dashboard). The error texts start with a fixed tag the website uses to ask for the code.
+ */
+var TEAM_SHEETS = { work: true, log: true, commercial: true, adminQc: true };
+function needTeamCode_(req) {
+  var want = String(prop_('TEAM_CODE') || '').trim();
+  if (!want) return;
+  var code = String(req.code || '').trim();
+  if (code === want) return;
+  var dashToken = String(prop_('DASHBOARD_TOKEN') || '').trim();
+  if (dashToken && String(req.token || '').trim() === dashToken) return;
+  throw new Error(code ? 'TEAM_CODE_WRONG: The team access code is wrong or was changed. Ask your team lead for the current code.' : 'TEAM_CODE_NEEDED: Enter the team access code (ask your team lead).');
+}
+
 var ASSIGN_ROLES = { 'uploaded by': 'Upload', 'visual editor': 'Image editing', 'qc by': 'QC' };
 
 /**
@@ -552,7 +575,7 @@ function doGet(e) {
       var comErr = check(SHEETS.commercial);
       var govErr = (function () { try { SpreadsheetApp.openById(GOVERNANCE_ID); return null; } catch (err) { return 'The Apps Script runs as ' + account_() + ', and that account cannot open the Governance sheet. Share it with ' + account_() + ' as Editor.'; } })();
       return json_({ ok: true, version: SCRIPT_VERSION, account: account_(), sync: !!github_(),
-        work: !workErr, workError: workErr, sheet: !govErr, sheetError: govErr, commercial: !comErr, commercialError: comErr, teams: !teamsHookProblem_(String(prop_('TEAMS_WEBHOOK') || '').trim()), teamsError: teamsHookProblem_(String(prop_('TEAMS_WEBHOOK') || '').trim()) || null, dashLock: !!String(prop_('DASHBOARD_TOKEN') || '').trim() });
+        work: !workErr, workError: workErr, sheet: !govErr, sheetError: govErr, commercial: !comErr, commercialError: comErr, teams: !teamsHookProblem_(String(prop_('TEAMS_WEBHOOK') || '').trim()), teamsError: teamsHookProblem_(String(prop_('TEAMS_WEBHOOK') || '').trim()) || null, dashLock: !!String(prop_('DASHBOARD_TOKEN') || '').trim(), teamLock: !!String(prop_('TEAM_CODE') || '').trim() });
     }
     if (action === 'read') return json_(read_(p));
     if (action === 'syncStatus') return json_(syncStatus_());

@@ -36,7 +36,7 @@ export function ConnectionsCard() {
     }
     window.location.reload();
   };
-  const [ping, setPing] = useState<{ ok: boolean; sync?: boolean; sheet?: boolean; sheetError?: string; work?: boolean; workError?: string; commercial?: boolean; commercialError?: string; teams?: boolean; teamsError?: string | null; account?: string; version?: string; error?: string } | null>(null);
+  const [ping, setPing] = useState<{ ok: boolean; sync?: boolean; sheet?: boolean; sheetError?: string; work?: boolean; workError?: string; commercial?: boolean; commercialError?: string; teams?: boolean; teamsError?: string | null; teamLock?: boolean; account?: string; version?: string; error?: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const repoUrl = BUILD.repo ? `https://github.com/${BUILD.repo}` : null;
 
@@ -51,9 +51,9 @@ export function ConnectionsCard() {
               : `HTTP ${r.status} from the Web app. Check Deploy → Manage deployments: Execute as Me, Who has access Anyone.`,
           );
         }
-        return readAppsScriptJson<{ ok?: boolean; sync?: boolean; sheet?: boolean; sheetError?: string; work?: boolean; workError?: string; commercial?: boolean; commercialError?: string; teams?: boolean; teamsError?: string | null; account?: string; version?: string }>(r);
+        return readAppsScriptJson<{ ok?: boolean; sync?: boolean; sheet?: boolean; sheetError?: string; work?: boolean; workError?: string; commercial?: boolean; commercialError?: string; teams?: boolean; teamsError?: string | null; teamLock?: boolean; account?: string; version?: string }>(r);
       })
-      .then((j) => setPing({ ok: !!j.ok, sync: !!j.sync, sheet: j.sheet, sheetError: j.sheetError ?? undefined, work: j.work, workError: j.workError ?? undefined, commercial: j.commercial, commercialError: j.commercialError ?? undefined, teams: j.teams, teamsError: j.teamsError ?? null, account: j.account ?? undefined, version: j.version ?? '' }))
+      .then((j) => setPing({ ok: !!j.ok, sync: !!j.sync, sheet: j.sheet, sheetError: j.sheetError ?? undefined, work: j.work, workError: j.workError ?? undefined, commercial: j.commercial, commercialError: j.commercialError ?? undefined, teams: j.teams, teamsError: j.teamsError ?? null, teamLock: j.teamLock, account: j.account ?? undefined, version: j.version ?? '' }))
       .catch((e) => setPing({ ok: false, error: (e as Error).message || 'Not reachable — check the deployment access is “Anyone”.' }));
   }, [url]);
 
@@ -205,6 +205,9 @@ export function ConnectionsCard() {
           {ping?.ok && (
             <Ok ok={!!ping.teams}>Teams message on assign {ping.teams ? 'ready' : ping.teamsError && !/not set/.test(ping.teamsError) ? 'TEAMS_WEBHOOK is wrong' : 'needs TEAMS_WEBHOOK'}</Ok>
           )}
+          {ping?.ok && ping.teamLock !== undefined && (
+            <Ok ok={ping.teamLock}>Job desk / Task board {ping.teamLock ? 'need the team access code' : 'open to anyone with the link — set TEAM_CODE'}</Ok>
+          )}
         </div>
         {ping?.ok && !ping.teams && ping.teamsError && /people list|must be the URL|not a webhook/.test(ping.teamsError) && (
           <p style={{ color: 'var(--bad)', fontSize: 13, marginTop: 0 }}>{ping.teamsError}</p>
@@ -304,6 +307,11 @@ export function ConnectionsCard() {
             Optional — <b>Teams message on assign</b>: in Microsoft Teams open the channel or group chat → <b>•••</b> → <b>Workflows</b> → <b>Post to a channel when a webhook request is received</b> (for a
             group chat: <b>Send webhook alerts to a chat</b>) → finish the steps → copy the webhook URL shown at the end (not the chat's own “Copy link”). In Apps Script → Project Settings → <b>Script Properties</b> add <code>TEAMS_WEBHOOK</code> = that URL → Save, then refresh this page. For real @mentions also add{' '}
             <code>TEAMS_PEOPLE</code> = <code>{'{"Name":"teams-email", …}'}</code>. No new deployment is needed for Script Properties.
+          </li>
+          <li>
+            Recommended — <b>protect the Job desk and Task board</b>: the Web app URL is public, so without this anyone who has it can read and change the Work Sheet. In Apps Script →
+            Project Settings → <b>Script Properties</b> add <code>TEAM_CODE</code> = a code for your team (script {LATEST_SCRIPT}+) and share it with them; each device asks for it once.
+            This unlocked dashboard (and devices that remember the dashboard password) don't need it. To change it, edit the property — everyone is asked again.
           </li>
         </ol>
         <details style={{ marginTop: 14 }}>

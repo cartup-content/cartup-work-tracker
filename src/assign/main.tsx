@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AssignForm } from './AssignForm';
+import { TeamCodeGate } from '../components/TeamCodeGate';
 import '../styles/global.css';
 import '../form/form.css';
 import './assign.css';
@@ -14,6 +15,8 @@ try {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AssignForm />
+    <TeamCodeGate>
+      <AssignForm />
+    </TeamCodeGate>
   </StrictMode>,
 );
