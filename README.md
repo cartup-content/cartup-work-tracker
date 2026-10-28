@@ -555,13 +555,14 @@ How it works:
 
 The Apps Script Web app URL is public (it is in `config/data-source.json` and in the site). Without a code, anyone who has it can read the Work Sheet and change its writable columns.
 
-1. Update the Apps Script to 2.3.0 or later: Settings → Connections → **Copy script**, paste it into `Code.gs`, then Deploy → Manage deployments → ✏️ → Version: **New version** → Deploy.
-2. Apps Script → Project Settings → **Script Properties** → add `TEAM_CODE` = a code for your team.
+1. Update the Apps Script to 2.4.0 or later: Settings → Connections → **Copy script**, paste it into `Code.gs`, then Deploy → Manage deployments → ✏️ → Version: **New version** → Deploy.
+2. In the unlocked dashboard: **Settings → Team access code** → type a code (or **Generate**) → **Turn on** (needs script 2.4.0+ and `DASHBOARD_TOKEN`). Or add the Script Property `TEAM_CODE` in Apps Script → Project Settings → **Script Properties**.
 3. Share the code with the team. The Job desk and Task board ask for it once per device ("Remember on this device").
 
 How it works:
 - With `TEAM_CODE` set, the script answers Work Sheet, Form Log and QC-sheet requests only when they carry the code or the dashboard access code (`DASHBOARD_TOKEN`). The unlocked dashboard, and devices that remember the dashboard password, don't need the team code.
-- **Changing the code:** edit the property. Devices with the old code are asked again.
+- **Changing the code** (for example when someone leaves): Settings → Team access code → **Change code**, or edit the property. Devices with the old code are asked again.
+- The dashboard reads and changes the code only with the dashboard access code (`DASHBOARD_TOKEN`), so the public Web app URL alone can't. Turning the code off is done by deleting the property in Apps Script.
 - Settings → Connections shows "Job desk / Task board need the team access code" when it is on.
 - Without `TEAM_CODE`, nothing changes.
 
