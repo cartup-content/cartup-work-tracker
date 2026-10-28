@@ -30,9 +30,10 @@
  * Optional — team access code for the Job desk and Task board: Script Property TEAM_CODE = a code you
  *   give the team. Then the Work Sheet, Form Log and QC sheets only answer requests carrying that code
  *   (or the dashboard access code), so the public Web app URL alone can no longer read or change them.
+ *   The unlocked dashboard can also show and change it (Settings → Team access code), when DASHBOARD_TOKEN is set.
  */
 
-var SCRIPT_VERSION = '2.3.0';
+var SCRIPT_VERSION = '2.4.0';
 
 var WORK_ID = '1H35eZz06Wx4uGcFXxZjwQQ1F1M5T8qU3gi8fY2gvaXc';
 var GOVERNANCE_ID = '1Bw1lfwvEJfFOx_1HFifPqdr6KoG9XQ8rAJiNAboN5T4';
@@ -504,6 +505,21 @@ function needTeamCode_(req) {
   throw new Error(code ? 'TEAM_CODE_WRONG: The team access code is wrong or was changed. Ask your team lead for the current code.' : 'TEAM_CODE_NEEDED: Enter the team access code (ask your team lead).');
 }
 
+/**
+ * Settings → Team access code in the unlocked dashboard: returns TEAM_CODE, and with `set` replaces it.
+ * Needs DASHBOARD_TOKEN set and sent, so the public Web app URL alone can't read or change the code.
+ */
+function teamCode_(body) {
+  if (!String(prop_('DASHBOARD_TOKEN') || '').trim()) throw new Error('Set the dashboard password first, then DASHBOARD_TOKEN (Settings → Dashboard password).');
+  needToken_(body.token);
+  if (body.set !== undefined) {
+    var code = String(body.set || '').trim();
+    if (code.length < 6 || code.length > 64) throw new Error('The team access code must be 6–64 characters.');
+    PropertiesService.getScriptProperties().setProperty('TEAM_CODE', code);
+  }
+  return { ok: true, code: String(prop_('TEAM_CODE') || '').trim() };
+}
+
 var ASSIGN_ROLES = { 'uploaded by': 'Upload', 'visual editor': 'Image editing', 'qc by': 'QC' };
 
 /**
@@ -592,6 +608,7 @@ function doPost(e) {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     if (body.action === 'write') return json_(write_(body, new Date()));
     if (body.action === 'triggerSync') { needToken_(body.token); return json_(triggerSync_()); }
+    if (body.action === 'teamCode') return json_(teamCode_(body));
     throw new Error('Unknown action');
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message ? err.message : err) });

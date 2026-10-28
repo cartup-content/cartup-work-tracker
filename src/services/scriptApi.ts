@@ -166,6 +166,26 @@ export async function scriptWriteNotify(
   return { results: out, notify: notify ? (old && !notes.length ? null : notes) : [] };
 }
 
+/**
+ * Settings → Team access code (script 2.4.0+): the current TEAM_CODE ('' = off), and with `set` a new one.
+ * Only the unlocked dashboard can do this: the script checks the dashboard access code.
+ */
+export async function scriptTeamCode(url: string, set?: string): Promise<string> {
+  const token = await savedDashToken();
+  const res = await call(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'teamCode', ...(token ? { token } : {}), ...(set !== undefined ? { set } : {}) }),
+  });
+  if (!res.ok) throw new Error(`The Google Sheets service returned HTTP ${res.status}.`);
+  const j = await readAppsScriptJson<{ ok: boolean; error?: string; code?: string }>(res);
+  if (!j.ok) {
+    if (looksOld(j.error ?? '')) throw new OldScriptError();
+    throw new Error(j.error || 'Could not reach the team access code.');
+  }
+  return j.code ?? '';
+}
+
 /** Try each Web app URL until one runs the current script. Returns the result and the URL that worked. */
 export async function withAnyUrl<T>(urls: string[], fn: (url: string) => Promise<T>): Promise<{ value: T; url: string }> {
   let last: Error = new Error('Not connected: the Apps Script Web app URL is missing.');

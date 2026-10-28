@@ -37,7 +37,7 @@ export function LockCard() {
         {unlocked && code && (
           <div>
             <b>Apps Script access code</b> (Script Property <code>DASHBOARD_TOKEN</code>): once it is set, the Apps Script only lets the unlocked dashboard read or change
-            the Governance projects and press <b>Update data</b>. The Job desk and Task board keep working without it.
+            the Governance projects and press <b>Update data</b>. The Job desk and Task board use the team access code instead (card below).
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
               <code style={{ wordBreak: 'break-all', fontSize: 12 }}>{code}</code>
               <button type="button" className="btn btn-sm" onClick={copy}>
@@ -61,7 +61,7 @@ export function LockCard() {
           </li>
         </ol>
         <p className="muted" style={{ margin: 0, fontSize: 12.5 }}>
-          The Job desk and Task board pages stay open without a password.
+          The Job desk and Task board pages are protected by the team access code (card below), not by this password.
         </p>
       </div>
     </Card>

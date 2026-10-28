@@ -309,9 +309,10 @@ export function ConnectionsCard() {
             <code>TEAMS_PEOPLE</code> = <code>{'{"Name":"teams-email", …}'}</code>. No new deployment is needed for Script Properties.
           </li>
           <li>
-            Recommended — <b>protect the Job desk and Task board</b>: the Web app URL is public, so without this anyone who has it can read and change the Work Sheet. In Apps Script →
-            Project Settings → <b>Script Properties</b> add <code>TEAM_CODE</code> = a code for your team (script {LATEST_SCRIPT}+) and share it with them; each device asks for it once.
-            This unlocked dashboard (and devices that remember the dashboard password) don't need it. To change it, edit the property — everyone is asked again.
+            Recommended — <b>protect the Job desk and Task board</b>: the Web app URL is public, so without this anyone who has it can read and change the Work Sheet. Set a
+            code in <b>Settings → Team access code</b> below (script {LATEST_SCRIPT}+, needs the dashboard password and <code>DASHBOARD_TOKEN</code>), or add the Script Property{' '}
+            <code>TEAM_CODE</code> by hand, and share it with the team; each device asks for it once. This unlocked dashboard (and devices that remember the dashboard password)
+            don't need it. Changing the code asks everyone again.
           </li>
         </ol>
         <details style={{ marginTop: 14 }}>
