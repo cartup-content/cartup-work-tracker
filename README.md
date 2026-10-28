@@ -534,7 +534,7 @@ The Job desk and Task board get the list from the sync, which uses the Team tab 
 
 ### Dashboard password
 
-This is an encrypted lock, not just a login screen. It covers **the dashboard only**; the Job desk (`form.html`) and Task board (`assign.html`) stay open.
+This is an encrypted lock, not just a login screen. It covers **the dashboard only**; the Job desk (`form.html`) and Task board (`assign.html`) are protected separately by the [team access code](#team-access-code-job-desk-and-task-board).
 
 1. GitHub → repository **Settings → Secrets and variables → Actions → New repository secret**. Name it `DASHBOARD_PASSWORD` and set the password (8+ characters) as its value.
 2. Click **Update data**, or run the "Sync Google Sheet & Deploy" workflow.
@@ -547,9 +547,23 @@ How it works:
 - **Changing the password:** change the secret and run Update data. Everyone is asked for the new password. Unlock and replace `DASHBOARD_TOKEN` with the new code.
 - **Limits:**
   - `form.json` (people names and the Apps Script link) stays public for the Job desk.
-  - Because the Job desk and Task board are open, the Work Sheet can still be read and updated through the Apps Script by someone who has that link.
+  - Without the [team access code](#team-access-code-job-desk-and-task-board), the Work Sheet can still be read and updated through the Apps Script by someone who has that link.
   - For company sign-in on every page, put the site behind Cloudflare Access.
 - Without the secret, nothing changes and the dashboard is open as before.
+
+### Team access code (Job desk and Task board)
+
+The Apps Script Web app URL is public (it is in `config/data-source.json` and in the site). Without a code, anyone who has it can read the Work Sheet and change its writable columns.
+
+1. Update the Apps Script to 2.3.0 or later: Settings → Connections → **Copy script**, paste it into `Code.gs`, then Deploy → Manage deployments → ✏️ → Version: **New version** → Deploy.
+2. Apps Script → Project Settings → **Script Properties** → add `TEAM_CODE` = a code for your team.
+3. Share the code with the team. The Job desk and Task board ask for it once per device ("Remember on this device").
+
+How it works:
+- With `TEAM_CODE` set, the script answers Work Sheet, Form Log and QC-sheet requests only when they carry the code or the dashboard access code (`DASHBOARD_TOKEN`). The unlocked dashboard, and devices that remember the dashboard password, don't need the team code.
+- **Changing the code:** edit the property. Devices with the old code are asked again.
+- Settings → Connections shows "Job desk / Task board need the team access code" when it is on.
+- Without `TEAM_CODE`, nothing changes.
 
 ---
 

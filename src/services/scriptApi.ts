@@ -4,7 +4,8 @@
  * features don't need a new Apps Script deployment.
  */
 import { readAppsScriptJson } from './appsScriptResponse';
-import { dashToken } from './dashLock';
+import { savedDashToken } from './dashLock';
+import { teamCode, teamCodeError } from './teamCode';
 
 export type Cell = string | number | null;
 export type WriteValue = Cell | { date: string } | { month: string } | { now: true };
@@ -91,13 +92,17 @@ export async function scriptRead(url: string, p: ReadParams): Promise<ReadResult
   if (p.need) q.set('need', p.need.join('|'));
   if (p.order) q.set('order', p.order);
   if (p.limit) q.set('limit', String(p.limit));
-  // Dashboard lock: the unlocked dashboard proves itself to the script (Governance tabs, Update button).
-  const tk = dashToken();
-  if (tk && (p.sheet === 'projects' || p.sheet === 'progress')) q.set('token', tk);
+  // Dashboard lock / team access code: the caller proves itself to the script (TEAM_CODE, DASHBOARD_TOKEN)
+  const tk = await savedDashToken();
+  if (tk) q.set('token', tk);
+  const code = teamCode();
+  if (code) q.set('code', code);
   const res = await call(`${url}?${q.toString()}`);
   if (!res.ok) throw new Error(`The Google Sheets service returned HTTP ${res.status}.`);
   const j = await readAppsScriptJson<{ ok: boolean; error?: string; columns?: string[]; rows?: Cell[][]; total?: number; locked?: string[] }>(res);
   if (!j.ok) {
+    const needsCode = teamCodeError(j.error);
+    if (needsCode) throw needsCode;
     if (looksOld(j.error ?? '')) throw new OldScriptError();
     throw new Error(j.error || 'Could not read the sheet.');
   }
@@ -137,15 +142,19 @@ export async function scriptWriteNotify(
   const out: WriteResult[] = [];
   const notes: NotifyResult[] = [];
   let old = false;
+  const token = await savedDashToken();
+  const code = teamCode();
   for (let i = 0; i < ops.length; i += 200) {
     const res = await call(url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'write', by, ops: ops.slice(i, i + 200), ...(notify ? { notify } : {}), ...(dashToken() ? { token: dashToken() } : {}) }),
+      body: JSON.stringify({ action: 'write', by, ops: ops.slice(i, i + 200), ...(notify ? { notify } : {}), ...(token ? { token } : {}), ...(code ? { code } : {}) }),
     });
     if (!res.ok) throw new Error(`The Google Sheets service returned HTTP ${res.status}.`);
     const j = await readAppsScriptJson<{ ok: boolean; error?: string; results?: WriteResult[]; notify?: NotifyResult }>(res);
     if (!j.ok) {
+      const needsCode = teamCodeError(j.error);
+      if (needsCode) throw needsCode;
       if (looksOld(j.error ?? '')) throw new OldScriptError();
       throw new Error(j.error || 'The change was rejected.');
     }
