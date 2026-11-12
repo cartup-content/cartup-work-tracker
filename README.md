@@ -405,7 +405,7 @@ To go back to automatic syncing, add a `schedule:` block to `.github/workflows/d
 |---|---|---|---|
 | 1 | **Cartup Content Work Tracker** (`GOOGLE_SHEET_ID`) | `Work Sheet`, `KPI & Target`, `Admin portal QC import data`, optional `Team Members` | Every dashboard page, Individual Summary, KPI |
 | 2 | **Governance Wrork Tracker** (`config → governance`) | `Main`, `Projects`, `Project Progress` | Ad-Hoc Tasks, REVAMP Projects, Product Governance report |
-| 3 | **Catalogue Overall Performance** (variable `PERFORMANCE_SHEET_ID`) | `Daily Performance`, `Monthly Performance`, `KPI`, `Team`, `Import - ContentCommercial Work`, `Import - Retail Picks Upload…` | Daily / Monthly Performance report; Team tab "Resigned" = left the job |
+| 3 | **Catalogue Overall Performance - New Master** (`config/data-source.json` → `performance.spreadsheetId`, or variable `PERFORMANCE_SHEET_ID`) | `Daily Performance`, `Monthly Performance`, `KPI`, `Team`, `Import - Content/Commercial Work Tracker`, `Import - Retail [Picks] Upload Request` | Daily / Monthly Performance report; Team tab "Resigned" = left the job |
 | 4 | **Retail [Picks] Upload Request, Import** (`config → extraSources.retail`) | the tab with gid `1610558392` | Individual Summary: Retail Picks table per uploader + "Retail SKUs Uploaded" |
 | 5 | **Admin Portal Pending QC** (`config → extraSources.pendingQc`) | the tab with gid `0` | Individual Summary: "Pending QC (Admin Portal, now)" |
 

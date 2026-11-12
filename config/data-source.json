@@ -21,9 +21,9 @@
     "tabs": { "adhoc": "Main", "projects": "Projects", "progress": "Project Progress" },
     "appsScriptUrl": "https://script.google.com/macros/s/AKfycbxkmUfIX4VFdFh0LUX1T_85qQKTbtfaMPFWcQVPsIiTe5CLK_OYsEl8ivntBGseR0CHsw/exec"
   },
-  "$comment_performance": "Catalogue Overall Performance spreadsheet (Daily / Monthly performance report). Set the ID here or as the GitHub variable PERFORMANCE_SHEET_ID, and share the sheet with the service account (Viewer). Tab names match by prefix.",
+  "$comment_performance": "Catalogue Overall Performance - New Master spreadsheet (Daily / Monthly performance report). Set the ID here or as the GitHub variable PERFORMANCE_SHEET_ID, and share the sheet with the service account (Viewer). Tab names match by prefix.",
   "performance": {
-    "spreadsheetId": "1YZpc9focwHtlK-10JF122ANYnNHt6AymsP8RP7fsY60",
+    "spreadsheetId": "1SHx8w0cathWEPyI9JlaDp2TCEMIHe1FWDlKKw5cFAEs",
     "tabs": {
       "monthly": "Monthly Performance",
       "daily": "Daily Performance",
