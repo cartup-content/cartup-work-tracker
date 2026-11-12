@@ -138,6 +138,12 @@ The filters are Date, **Year**, Month, Vertical, Task Type, Status and **Employe
 
   The record list shows every job they worked on in any role.
 
+  **Total Work / Completed / Pending / Total SKU** stay on the Date filter's own basis (Timestamp
+  by default) — the jobs assigned to that person in that window. **Uploaded SKU / QC Approved /
+  QC Rejected** always follow "What counts for an employee" below (finished work, dated by Upload
+  date / QC approved date), so they agree with "Uploads by person", "QC by person" and the Daily /
+  Monthly Performance report even when a job was requested on one day and finished on another.
+
 ## What counts for an employee
 
 Every per-person number (Team Performance, the person charts, Team Member page, Individual Summary, the per-role exports and the employee detail report) uses one rule, set in `credit` in `src/config/dashboard.config.ts`:
